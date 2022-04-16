@@ -153,9 +153,9 @@ To answer this question, I also draw all points that can be reach in a BFS searc
 
 Obviously, the answer is no.
 
-So I want to know how the suspective shapes in the corner of wall of the first picture exist?
+So I want to know why the suspective shapes in the corner of wall of the first picture exist?
 
-I located these point by check whether the output point input into the applyWall function will be changed again, and marked them in green. And I marked the original point of these points in red:
+I located these point by check whether using the output point as the input for the applyWall function again will change the output point again, and marked them in green. And I marked the original point of these points in red:
 
 ![](./ub2.png)
 
@@ -165,7 +165,7 @@ It's easy to find a solution from this map:
 
 For more accuracy, now I explain why it can work.
 
-We can got the wall check area(where player will be pushed out by the wall) by reading the source code. The answer is the check area of a horzontal is a rectangle whose midpoints of its left and right edges is the start and end points of these wall, with a height of 1, and the check area of a vertical is a rectangle whose midpoints of its top and bottom edges is the start and end points of these wall, with a width of 2.
+We can got the wall check area(where player will be pushed out by the wall) by reading the source code. The answer is the check area of a horzontal wall is a rectangle whose midpoints of its left and right edges are the start and end points of these wall, with a height of 1, and the check area of a vertical wall is a rectangle whose midpoints of its top and bottom edges are the start and end points of these wall, with a width of 2.
 
 So the corner is looked like below:
 
@@ -198,7 +198,7 @@ And the script for Incite Conspiracy can be used here for keeping other players'
 
 Since the Euclidean distance of a single movement cannot exceed 0.5+1e-8, it is easy to have the illusion that once the absolute value of y component exceeds 0.5, the absolute value of x component cannot be higher than 1e-8.
 
-But in fact, if the limitation of the Euclidean distance is $a+b$, where $a$ is a large number and the $b$ is a very small number relatively. When one component exceeds $a$, another component can reach about $\sqrt{b}$, which become acceptable in this case.
+But in fact, if the limitation of the Euclidean distance is $a+b$, where $a$ is a large number and the $b$ is a very small number relatively. When one component exceeds $a$, another component can reach about $\sqrt{b}$, which become acceptable in the challenge's case.
 
 This trap impressed me long time ago.
 
@@ -208,7 +208,7 @@ I use two way to get this.
 
 In local test, I just add `(window as any).game = game;` into the codebase.
 
-In the remote, I use a hook technique to get the game for the exposed `FileTransferController` class.
+In the remote, I use a hook technique to get the game from the exposed `FileTransferController` class.
 
 Firstly, run this code in Devtools to hook a function of controllers.
 
@@ -243,11 +243,11 @@ Notice 5 points in the code:
 
 1. The player's `recentLocation` won't be cleared when the player enter the shelld from dropship.
 2. The order in the movement system is apply the delta -> applyWall -> applyBound -> deal with killing(including location change in killing).
-3. The check allow a hoaxer to kill anoher player are: the distance between the hoaxer-provided point and the hoaxer is quite close; the hoaxer-provided point is equal to the current location of the player or one of its `recentLocation`; there are no wall between(not `hasWallBetween`) the hoaxer-provided point and the hoaxer.
-4. When the player interact other system, the `recentLocation` won't be updated anymore.(Same goal can be achieved by always send invalid delta in movement system.)
+3. The check allow a hoaxer to kill anoher player when: the distance between the hoaxer-provided point and the hoaxer is quite close; the hoaxer-provided point is equal to the current location of the player or one of its `recentLocation`; there are no wall between(not `hasWallBetween`) the hoaxer-provided point and the hoaxer.
+4. When the player interact other system, the `recentLocation` won't be updated anymore.(Same goal can be achieved by always sending invalid delta in movement system.)
 5. Part of the positions that players can reach in dropship are very close to the Conspiracy room in shelld.
 
-So, if a player go to a useful point in dropship and then the game start, this player immediately interacts with the immediate emergency button system. Then its `recentLocation` can always contains a certain position where player cannot reach directly in shelld.
+So, if a player go to a useful point in dropship and when the game start, this player immediately interacts with the immediate emergency button system, its `recentLocation` can always contains a certain position where player cannot reach directly in shelld.
 
 A [script](./flag1NodeScript.mjs) to achieve such a goal can be found in the repo. The usage is create a room and run `node flag1NodeScript.mjs <roomId>` and just keep it running.
 
@@ -257,6 +257,8 @@ Note that for debug purpose, we can add a new API to get the recentLocation from
 
 Now, to bypass `hasWallBetween`, we can select a position(2) near or on the horizontal wall we cannot reach directly. And then let the hoaxer(initially at (1)) kill this player to get its location(2)(due to the order of movement system, this gap won't `applyWall`), and then move with a delta of `[0,-0.5-1e-8]` to escape the wall check zone(3).
 
+To ensure the next tick of kill can be move with a delta of `[0,-0.5-1e-8]`, use this [script](./flag1DevToolsScript.js)(follow the instruction in comment).
+
 ### Explore Environment
 
-Just solve any problems above.
+Just solve any problem above.
